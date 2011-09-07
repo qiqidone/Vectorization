@@ -1,0 +1,21 @@
+#ifndef _BEZIER_H_
+#define _BEZIER_H_
+
+#include<vector>
+#include<cv.h>
+
+class Bezier
+{
+public:
+     Bezier( );
+     ~Bezier( );
+     bool initial( vector<CvPoint> &vp );
+     float dis(CvPoint &x, CvPoint &y);
+     float func(float t, int j);
+private:
+     static const int N = 4;
+     CvPoint m_Control[N];
+     
+}
+
+#endif /* _BEZIER_H_ */

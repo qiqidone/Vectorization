@@ -1,0 +1,96 @@
+#include"bezier.h"
+#include<math.h>
+#include<iostream>
+using namespace std;
+
+
+bool Bezier::initial( vector<CvPoint> &vp )
+{
+     int num = vp.size( );
+     int *t = new int[num+1];
+     float *dis = new float[num+1];
+
+     // 利用累加距离法 计算参数 t（0 - num-1）
+     t[0] = 0;
+     dis[0] = 0;
+     for( int i=1; i< num; i++ )
+     {
+          dis[i] = distance( vp[i-1], vp[i] ) + dis[i-1];
+     }
+     for( int i=1; i< num; i++ )
+     {
+          t[i] = dis[i] / dis[num-1];
+     }
+           
+     // 解方程
+     CvMat* A = cvCreateMat( num, N, CV_32FC1 );
+     CvMat* Bx = cvCreateMat( num, 1, CV_32FC1 );
+     CvMat* By = cvCreateMat( num, 1, CV_32FC1 );
+     CvMat* X = cvCreateMat( N, 1, CV_32FC1 );
+     CvMat* Y = cvCreateMat( N, 1, CV_32FC1 );
+     // 求 X & Y
+     for( int i=0; i<num; i++ )
+          {
+               //矩阵 A
+               for( int j=0; j<N; j++ )
+                    {
+                         CV_MAT_ELEM( *A, float, i, j) = func( t[i], j );  
+                    }
+                         // 矩阵 B
+                         CV_MAT_ELEM( *Bx, float, i, 0 ) = (float)vp[i].x;
+                    CV_MAT_ELEM( *By, float, i, 0 ) = (float)vp[i].y;
+                         
+                    }
+
+               // 最小而乘法解
+               cvSolve( A, Bx, X, CV_SVD);
+               cvSolve( A, By, Y, CV_SVD);
+
+               // 赋值给控制点
+               for( int j=0; j<N; j++ )
+                    {
+                         m_Control[j].x = CV_MAT_ELEM( *Bx, float, j, 0);
+                         m_Control[j].y = CV_MAT_ELEM( *By, float, j, 0);
+                    }
+
+          
+                    delete[] t;
+                    delete[] dis;
+                    cvReleaseMat( &A );
+                    cvReleaseMat( &Bx );
+                    cvReleaseMat( &By );
+                    cvReleaseMat( &X );
+                    cvReleaseMat( &Y );
+                    return true;
+          
+                    }
+          
+
+flaot Bezier::distance( CvPoint &a, CvPoint &b )
+               {
+                    return sqrt( (a.x-b.x) * (a.x-b.x) + (a.y-b.y) * (a.y-b.y) );
+               }
+          
+float Bezier::func( float t, int j )
+               {
+                    if( j > N-1 || t < 0.00001 || t > 1.00001)
+                    {
+                         cout << "Error @ Bezier" << endl;
+                         return -1.0f;
+                    }
+                    float res = 0;
+
+                    int i = 1;
+                    int m = 1;
+                    int n = 1;
+                    while( i <= j )
+                    {
+                         m *= i;
+                         n *= ( N-1 - i );
+                         i++;
+                    }
+                    res = 1.0 * power( (1-t), N-1-j ) * power( t, j ) * n / m ; 
+
+     
+                    return res;
+               }
