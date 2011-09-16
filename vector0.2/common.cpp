@@ -38,14 +38,11 @@ namespace common
           cvInitSubdivDelaunay2D( subdiv, rect );
           return subdiv;
      }
-
 // 画出候选点
-
      void draw_subdiv_point( IplImage* img, CvPoint2D32f fp, CvScalar color )
      {
           cvCircle( img, cvPoint(cvRound(fp.x), cvRound(fp.y)), 3, color, CV_FILLED, 8, 0 );
      }
-
 // 画 边
      void draw_subdiv_edge( IplImage* img, CvSubdiv2DEdge edge, CvScalar color )
      {
@@ -69,9 +66,7 @@ namespace common
                cvLine( img, iorg, idst, color, 1, CV_AA, 0 );
           }
      }
-
 // 画边？
-
      void draw_subdiv( IplImage* img, CvSubdiv2D* subdiv,
                        CvScalar delaunay_color, CvScalar voronoi_color )
      {
@@ -94,8 +89,6 @@ namespace common
                CV_NEXT_SEQ_ELEM( elem_size, reader );
           }
      }
-
-
      void locate_point( CvSubdiv2D* subdiv, CvPoint2D32f fp, IplImage* img,
                         CvScalar active_color )
      {
@@ -118,7 +111,6 @@ namespace common
 
           draw_subdiv_point( img, fp, active_color );
      }
-
 // 画面
      void draw_subdiv_facet( IplImage* img, CvSubdiv2DEdge edge )
      {
@@ -311,7 +303,6 @@ namespace common
           cvDestroyWindow( win );
      }
 
-     
      void delaunay( IplImage* edge, IplImage* img, IplImage* source = NULL )
      {
           if( edge == NULL )
@@ -350,6 +341,7 @@ namespace common
                points.push_back( cvPoint2D32f(0, i*h_num) );
           }
           // 为了避免点过少时右下角的点被剔除，就而外加一点
+          points.push_back( cvPoint2D32f(0, 0) );
           points.push_back( cvPoint2D32f(img->width-1, img->height-1) );
           
           char win[] = "source";
@@ -380,7 +372,6 @@ namespace common
 
                if( cvWaitKey(10) >= 0 )
                     break;
-              
           }
 
           // cvSet( img, bkgnd_color, 0 );
@@ -415,9 +406,9 @@ namespace common
           if(fabs(buf[0].x) <= 1199 && fabs(buf[0].y) <= 1199 &&   
              fabs(buf[1].x) <= 1199 && fabs(buf[1].y) <= 1199 &&   
              fabs(buf[2].x) <= 1199 && fabs(buf[2].y) <= 1199 &&
-             buf[0].x > 0 && buf[0].y > 0 &&
-             buf[1].x > 0 && buf[1].y > 0 &&
-             buf[2].x > 0 && buf[2].y > 0 && j == 3)
+             buf[0].x >= 0 && buf[0].y >= 0 && // 没有=0造成了边缘没点
+             buf[1].x >= 0 && buf[1].y >= 0 &&
+             buf[2].x >= 0 && buf[2].y >= 0 && j == 3)
           {
                lt.push_back(VTriangle(buf));        // 添加三角形
                // cout <<  __FUNCTION__ << "\t" << lt.size() << endl;
@@ -462,6 +453,7 @@ namespace common
      // std的unique find 以及 sort作孽， 考虑自己写个吧 fuc
      void saveTriangle(list<VTriangle>& lt)
      {
+          cout <<  __FUNCTION__ << "\t" << "Start Save OBJ......" << endl;
           char filename[] = "image.obj";
           ofstream outfile(filename);
           //
@@ -519,7 +511,7 @@ namespace common
                outfile << endl;
           }
           outfile.close();
-               
+          cout <<  __FUNCTION__ << "\t" << "Finish Save OBJ......" << endl;      
      }
      // 输出Triangle
      void printTriangle(list<VTriangle>& lt)
@@ -579,6 +571,7 @@ namespace common
      // 还没想好
      void merge_compress(list<VTriangle>& lv)
      {
+          cout <<  __FUNCTION__ << "\t" << "Merge Triangles start" << endl;
           // 转换成vector，为了能随机访问
           vector< list<VTriangle>::iterator > vector_iterator;
           for( list<VTriangle>::iterator it = lv.begin(); it != lv.end(); it++ )
@@ -596,6 +589,7 @@ namespace common
           // 开始合并 union
           vector< list<VTriangle>::iterator >::iterator it_it;
           vector< list<VTriangle>::iterator >::iterator it_jt;
+          int merge_num = 0;
           for( int i=0; i<vector_iterator.size(); i++ )
           {
                for( int j=0; j<i; j++ )
@@ -604,6 +598,7 @@ namespace common
                         is_neighbour(*vector_iterator[i], *vector_iterator[j]) )
                     {
                          father[j] = father[i];
+                         merge_num++;
                          break;
                     }
                }
@@ -614,7 +609,7 @@ namespace common
                (*vector_iterator[i]).setColor( *vector_iterator[ father[i] ] );
           }
 
-
+          cout <<  __FUNCTION__ << "\t" << "Total Num: " << vector_iterator.size()-merge_num << endl;
           delete[] father;
      }
      // Blur
@@ -622,6 +617,7 @@ namespace common
      // version 0.1
      void blur(IplImage* scr, IplImage* dst)
      {
+          cout <<  __FUNCTION__ << "\t" << "Blur Triangles start" << endl;
           // cvSmooth(scr, dst, CV_BLUR, 3, 3, 0.5, 0.5);
      }
      // 三角化 剖分完后的主程
@@ -652,33 +648,42 @@ namespace common
           }
 
           // 剔除重复三角形
-          cout << endl << "befor unique" << triangles.size() << endl;
+          cout << endl << "befor unique : " << triangles.size() << endl;
           pickTriangle(triangles);
-          cout << endl << "after unique" << triangles.size() << endl;
+          cout << "after unique : " << triangles.size() << endl;
           // 合并、优化三角形
-          merge_compress(triangles);
+          // merge_compress(triangles);
 #if GO_DEBUG_SAVE
           cout <<  __FUNCTION__ << "\t" << "start save obj" << endl;
 #endif
           // 保存数据
           saveTriangle(triangles);
           // 绘制所有三角形
-          IplImage* draw = cvCreateImage(cvGetSize(source), 8, 3);
-          cvZero(draw);
+          cvNamedWindow("draw", 1);
+          IplImage* canvas = cvCreateImage(cvGetSize(source), 8, 3);
+          cvZero(canvas);
           for(it = triangles.begin(); it != triangles.end(); it++)
           {
                it->traversal(source);
-               it->draw(draw);
+               it->draw(canvas);
 #if GO_DEBUG
                cvWaitKey(10);
-               cvShowImage("draw",draw);
+               cvShowImage("draw",canvas);
+                cout <<  __FUNCTION__ << "\t" << "draw triangles......" << endl;
 #endif
           }
-          blur(draw, draw);
-          cvShowImage("draw",draw);
+#if GO_DEBUG
+          cout <<  __FUNCTION__ << "\t" << "Finish draw triangles......" << endl;
+#endif          
+          // blur(canvas, canvas);
+          cvShowImage("draw",canvas);
           cvWaitKey();
-                    
-          cvReleaseImage(&draw);
+          cvSaveImage("result.jpg", canvas);
+          cvReleaseImage(&canvas);
+          cvDestroyWindow("draw");
+#if GO_DEBUG
+          cout <<  __FUNCTION__ << "\t" << "exit......" << endl;
+#endif
      }
 
 

@@ -44,6 +44,7 @@ class Vgui : public QWidget
 	QPushButton* runButton;
     QPushButton* meshButton;
     QPushButton* testButton;
+    QPushButton* saveButton;
 };
 
 class Vshader : public QThread
@@ -85,6 +86,7 @@ public:
     bool run();
     bool delaunay();
     bool test();
+    bool save();
 };
 
 

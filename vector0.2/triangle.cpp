@@ -244,8 +244,11 @@ void VTriangle::traversal(IplImage* img)
                y++;
           }
      }
-     setColor(cvScalar(color[0]/total, color[1]/total, color[2]/total));
-     
+     // total == 0 的情况不是不可能！特别注意
+     if(total != 0)
+          setColor(cvScalar(color[0]/total, color[1]/total, color[2]/total));
+     else
+          setColor( cvScalar(0,0,0) );
 }
 // 未考虑有两点在同一直线上
 void VTriangle::superTraversal(IplImage* img, int size)

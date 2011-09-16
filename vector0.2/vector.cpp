@@ -101,12 +101,14 @@ bool Vgui::design()
      runButton = new QPushButton(tr("Run Fill"));
      meshButton = new QPushButton(tr("Mesh"));
      testButton = new QPushButton(tr("Test"));
+     saveButton = new QPushButton(tr("Save"));
      // new完毕，开始布局	
      QVBoxLayout* mainLayout = new QVBoxLayout();
      mainLayout->addWidget(fileButton);
      mainLayout->addWidget(runButton);
      mainLayout->addWidget(meshButton);
      mainLayout->addWidget(testButton);
+     mainLayout->addWidget(saveButton);
      
      // main Layout
      setLayout(mainLayout);
@@ -233,6 +235,7 @@ bool Vectorize::vconncet()
      connect(m_gui.runButton, SIGNAL(clicked()), this, SLOT(run()));
      connect(m_gui.meshButton, SIGNAL(clicked()), this, SLOT(delaunay()));
      connect(m_gui.testButton, SIGNAL(clicked()), this, SLOT(test()));
+     connect(m_gui.saveButton, SIGNAL(clicked()), this, SLOT(save()));
      
      return true;
 }
@@ -291,5 +294,26 @@ bool Vectorize::test()
      m_shader.run(4);
      m_shader.quit();
      return true;
+}
+bool Vectorize::save()
+{
+     if(m_data.m_dst == NULL)
+     {
+          QMessageBox::about(NULL, "Error", "No data? ");
+          return false;
+     }
+     
+      QString fileName = QFileDialog::getSaveFileName(&m_gui, tr("Save Image File"), NULL, tr("Images (*.jpg *.png *.bmp)"));
+
+     if(!fileName.isEmpty())
+     {
+          /* 将QSTRING 类型转换为char* */
+          QByteArray temp = fileName.toLocal8Bit();
+          const char* c_str = temp.data();
+          cvSaveImage(c_str, m_data.m_dst);
+          return true;
+     }
+    
+     return false;
 }
 /****************   class Vectorize .end ...... ******************/
