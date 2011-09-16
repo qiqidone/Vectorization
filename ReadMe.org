@@ -1,7 +1,16 @@
-1.v0.2 start project
+v 0.2 start project 
 
 * DONE VTriangle:采样、绘制、重载操作符
   CLOSED: [2011-09-07 三 18:38]
+
 * TODO 合并三角
-
-
+** DONE [#B] is_neighbour
+   CLOSED: [2011-09-13 二 11:03]
+   判断是否相邻
+** DONE [#B] is_similar
+   CLOSED: [2011-09-13 二 11:03]
+   判断是否颜色相近
+** TODO [#B] 从list里搜索，将所有相邻颜色相近的都归类，查并集？
+   +
+** TODO [#B] blur利用三角的边进行blur
+   +直接的高斯blur会让颜色边暗，效果不好
