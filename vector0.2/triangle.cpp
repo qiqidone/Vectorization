@@ -95,6 +95,7 @@ bool is_similar(const VTriangle& vl, const VTriangle& vr)
 }
 // 距离相近，意味共用一边
 // 暂时先使用set，6次插入，不知道还有没有更好的选择
+// 还要测试
 bool is_neighbour(const VTriangle& vl, const VTriangle& vr)
 {
      set<CvPoint2D32f> set_points;
@@ -105,6 +106,17 @@ bool is_neighbour(const VTriangle& vl, const VTriangle& vr)
      }
      return set_points.size() <= 4;
 }
+
+
+// 判断是否归类的函数 取名groupon
+bool groupon(const VTriangle& vl, const VTriangle& vr)
+{
+     if( !is_neighbour(vl, vr) )
+          return false;
+     if( !is_similar(vl, vr) )
+          return false;
+     return true;
+}
 // VTriangle
 
 int VTriangle::Total = 0;
@@ -112,6 +124,7 @@ int VTriangle::Total = 0;
 VTriangle::VTriangle(const CvPoint2D32f points[])
 {
      id = VTriangle::Total++;
+     group = -1;
      m_Point[0] = points[0];
      m_Point[1] = points[1];
      m_Point[2] = points[2];
@@ -127,6 +140,7 @@ VTriangle::VTriangle(const CvPoint2D32f points[])
 VTriangle::VTriangle(const CvPoint points[])
 {
      id = VTriangle::Total++;
+     group = -1;
      m_Point[0] = cvPointTo32f(points[0]);
      m_Point[1] = cvPointTo32f(points[1]);
      m_Point[2] = cvPointTo32f(points[2]);
@@ -148,6 +162,10 @@ void VTriangle::setColor(VTriangle& vt)
      m_Color = vt.getColor();
 }
 
+void VTriangle::print(ostream& out)
+{
+     out << m_Point[0] << " " << m_Point[1] << " " << m_Point[2];
+}
 // 采样函数
 // 1.可以超采样 比如放大3倍
 // 2.色彩可以不单一 使用拟合模型
@@ -470,73 +488,3 @@ void VTriangle::draw(IplImage* img)
  
 }
 
-
-// void VTriangle::traversal(IplImage* img)
-// {
-//      // 颜色采样
-//      int color[3] = {0};
-//      int total = 0;
-//      // memset(color, 0, 3);
-//      //  cout <<  __FUNCTION__ << "\t" << color[2] << endl;
-//      // cout <<  __FUNCTION__ << "\t" << " of 0 Hello" << endl;
-//      float delta01 = (m_Point[0].x-m_Point[1].x) / (m_Point[0].y-m_Point[1].y);
-//      float delta02 = (m_Point[0].x-m_Point[2].x) / (m_Point[0].y-m_Point[2].y);
-//      float delta12 = (m_Point[1].x-m_Point[2].x) / (m_Point[1].y-m_Point[2].y);
-
-//      float deltaL = delta01 <= delta02 ? delta01 : delta02;
-//      float deltaR = delta01 < delta02 ? delta02 : delta01;
-//      int step = 0;
-//      int y = (int)m_Point[1].y;
-//      int x = (int)m_Point[1].x;
-//      // cout <<  __FUNCTION__ << "\t" << " of1 Hello" << endl;
-//      while(y - m_Point[2].y > ZERO)
-//      {
-//           int xl = (int)(x + step * deltaL);
-//           int xr = (int)(x + step * deltaR);
-//           for(int i = xl; i<=xr; i++)
-//           {
-//                // do something
-//                for(int q=0; q<3;q++)
-//                     color[q] += CV_IMAGE_ELEM(img,uchar,y,x*3+q);
-//                total += 1;
-//                // cout <<  __FUNCTION__ << "\t" << y << ": " << i  << endl;
-//           }
-//           step++;
-//           y--;
-//      }
-//       // cout <<  __FUNCTION__ << "\t" << color[0] << endl;
-//      y = m_Point[2].y;
-//      x = m_Point[2].x;
-//      step = 0;
-//      deltaL = delta02 >= delta12 ? delta02 : delta12;
-//      deltaR = delta02 < delta12 ? delta02 : delta12;
-//      while(y - m_Point[0].y < ZERO)
-//      {
-//           int xl = (int)(x - step * deltaL);
-//           int xr = (int)(x - step * deltaR);
-//           for(int i = xl; i<=xr; i++)
-//           {
-//                // do something
-//                 for(int q=0; q<3;q++)
-//                     color[q] += CV_IMAGE_ELEM(img,uchar,y,x*3+q);
-//                 total += 1;
-//                  // cout <<  __FUNCTION__ << "\t" << y << ": " << i  << endl;
-
-//           }
-//           step++;
-//           y++;
-//      }
-//      // cout <<  __FUNCTION__ << "\t" << "of2 Hello" << endl;
-//      // cout <<  __FUNCTION__ << "\t" << color[1] << endl;
-//      // cout <<  __FUNCTION__ << "\t" << total << endl;
-//      if(total != 0){
-//           color[0] = color[0]/total;
-//           // cout <<  __FUNCTION__ << "\t" << "3 Hello" << endl;
-//           color[1] = color[1]/total;
-//           color[2] = color[2]/total;
-//           // cout <<  __FUNCTION__ << "\t" << color[0] << ", " << color[1] << ", " << color[2] << ", " << endl;
-//      }
-     
-//      setColor( cvScalar(color[0], color[1], color[2]) );
-
-// }

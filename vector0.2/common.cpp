@@ -419,36 +419,36 @@ namespace common
      }
      // 剔除重复的三角形 使用list.unique是个不错的选择
      void pickTriangle(list<VTriangle>& lt)
+     {
+          if(lt.size() < 2)
           {
-               if(lt.size() < 2)
-               {
-                    cout <<  __FUNCTION__ << "\t" << "list size <= 1" << endl;
-                    return;
-               }
-
-               lt.sort();
-               /* unique */
-#if GO_DEBUG
-               for(list<VTriangle>::iterator it=lt.begin(); it!=lt.end(); ++it)
-                    cout <<  __FUNCTION__ << "\t" << *it << endl;
-#endif
-               lt.unique();
-#if GO_DEBUG
-               for(list<VTriangle>::iterator it=lt.begin(); it!=lt.end(); ++it)
-                    cout <<  __FUNCTION__ << "\t" << *it << endl;
-#endif
-               /* my own function 这个效果其实还好 为了可读性*/
-               // list<VTriangle>::iterator it = lt.begin();
-               // while( it != lt.end() )
-               // {
-               //      list<VTriangle>::iterator tmp = it++;
-               //      if(*it == *tmp)
-               //      {
-               //           lt.erase(it);
-               //           it = tmp;
-               //      }
-               // }
+               cout <<  __FUNCTION__ << "\t" << "list size <= 1" << endl;
+               return;
           }
+
+          lt.sort();
+          /* unique */
+#if GO_DEBUG
+          for(list<VTriangle>::iterator it=lt.begin(); it!=lt.end(); ++it)
+               cout <<  __FUNCTION__ << "\t" << *it << endl;
+#endif
+          lt.unique();
+#if GO_DEBUG
+          for(list<VTriangle>::iterator it=lt.begin(); it!=lt.end(); ++it)
+               cout <<  __FUNCTION__ << "\t" << *it << endl;
+#endif
+          /* my own function 这个效果其实还好 为了可读性*/
+          // list<VTriangle>::iterator it = lt.begin();
+          // while( it != lt.end() )
+          // {
+          //      list<VTriangle>::iterator tmp = it++;
+          //      if(*it == *tmp)
+          //      {
+          //           lt.erase(it);
+          //           it = tmp;
+          //      }
+          // }
+     }
      // 保存成obj格式
      // std的unique find 以及 sort作孽， 考虑自己写个吧 fuc
      void saveTriangle(list<VTriangle>& lt)
@@ -528,7 +528,7 @@ namespace common
           list<VTriangle>::iterator it;
           for(it=lt.begin(); it!=lt.end(); it++)
           {
-                outfile <<  __FUNCTION__ << "\t" << *it << endl;
+               outfile <<  __FUNCTION__ << "\t" << *it << endl;
           }
      }
      // 输出points
@@ -563,7 +563,7 @@ namespace common
           vector<CvPoint2D32f>::iterator it;
           for(it=lp.begin(); it!=lp.end(); it++)
           {
-                outfile <<  __FUNCTION__ << "\t" <<  it->x << ", " << it->y  << endl;
+               outfile <<  __FUNCTION__ << "\t" <<  it->x << ", " << it->y  << endl;
           }
      }
 
@@ -571,7 +571,7 @@ namespace common
      // 还没想好
      void merge_compress(list<VTriangle>& lv)
      {
-          cout <<  __FUNCTION__ << "\t" << "Merge Triangles start" << endl;
+          cout <<  __FUNCTION__ << "\t" << "Merge Triangles start..." << endl;
           // 转换成vector，为了能随机访问
           vector< list<VTriangle>::iterator > vector_iterator;
           for( list<VTriangle>::iterator it = lv.begin(); it != lv.end(); it++ )
@@ -612,6 +612,76 @@ namespace common
           cout <<  __FUNCTION__ << "\t" << "Total Num: " << vector_iterator.size()-merge_num << endl;
           delete[] father;
      }
+     // groupon
+     // group 要先分好空间 group.size() == lv.size()
+     // VTriangle 要提供is_grouped() set_group() 以及 groupon
+     void mergeTriangle(list<VTriangle>& lv, vector< vector<VTriangle> >& group)
+     {
+          cout <<  __FUNCTION__ << "\t" << "Merge Triangles start..." << lv.size() << endl;
+          // 转换成vector，为了能随机访问
+          vector<VTriangle> vt;
+          for( list<VTriangle>::iterator it = lv.begin(); it != lv.end(); it++ )
+          {
+               vt.push_back( *it );
+          }
+          
+          // 准循环开始
+          int last_index = -1;
+          for(int i=0; i!=vt.size(); i++)
+          {
+               // cout << i << endl;
+               int current_index;
+               if( !vt[i].is_grouped() )
+               {
+                    current_index = ++last_index;
+                    // cout << current_index << endl;
+                    group[current_index].push_back(vt[i]);
+                    vt[i].set_group(current_index);
+               }
+               else
+               {
+                    current_index = vt[i].get_group();
+               }
+               // 逐一比较
+               for(int j=i+1; j!=vt.size(); j++)
+               {
+#if GO_DEBUG_MERGE
+                    cout <<  __FUNCTION__ << "\t" << i << " vs " << j << endl;
+#endif 
+                    if( groupon( vt[i], vt[j] ) )
+                    {
+                         group[current_index].push_back(vt[j]);
+#if GO_DEBUG_MERGE
+                         cout <<  __FUNCTION__ << "\t" << "Groupon~~" << endl;
+#endif
+                    }
+               }
+               
+          }
+          cout <<  __FUNCTION__ << "\t" << "Merge Triangles end..." << group.size() << endl;
+     }
+     void drawGroup(vector< vector<VTriangle> >& group, IplImage* img)
+     {
+          for (int i = 0; i < group.size(); ++i)
+          {
+               for (int j = 0; j < group.size(); ++j)
+               {
+                    group[i][j].draw(img);
+               }
+          }
+     }
+     void printGroup(vector< vector<VTriangle> >& group, ostream& out)
+     {
+          for (int i = 0; i < group.size(); ++i)
+          {
+               out << "Group: " << i << endl;
+               for (int j = 0; j < group.size(); ++j)
+               {
+                    group[i][j].print(out);
+                    out << endl;
+               }
+          }
+     }
      // Blur
      // 根据三角形边缘进行blur，blur的masK根据原图得到
      // version 0.1
@@ -646,13 +716,16 @@ namespace common
 
                CV_NEXT_SEQ_ELEM( elem_size, reader );
           }
-
+          
           // 剔除重复三角形
           cout << endl << "befor unique : " << triangles.size() << endl;
           pickTriangle(triangles);
           cout << "after unique : " << triangles.size() << endl;
-          // 合并、优化三角形
-          // merge_compress(triangles);
+
+// 合并、优化三角形
+          vector< vector<VTriangle> > group( triangles.size() );
+          mergeTriangle(triangles, group);
+          
 #if GO_DEBUG_SAVE
           cout <<  __FUNCTION__ << "\t" << "start save obj" << endl;
 #endif
