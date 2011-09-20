@@ -451,6 +451,7 @@ namespace common
      }
      // 保存成obj格式
      // std的unique find 以及 sort作孽， 考虑自己写个吧 fuc
+     // 段错误
      void saveTriangle(list<VTriangle>& lt)
      {
           cout <<  __FUNCTION__ << "\t" << "Start Save OBJ......" << endl;
@@ -796,8 +797,5 @@ namespace common
 
           // run
           run();
-
      }
-
-
 }

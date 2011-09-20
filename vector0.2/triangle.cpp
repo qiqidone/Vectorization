@@ -96,6 +96,7 @@ bool is_similar(const VTriangle& vl, const VTriangle& vr)
 // 距离相近，意味共用一边
 // 暂时先使用set，6次插入，不知道还有没有更好的选择
 // 还要测试
+// 错误的程序
 bool is_neighbour(const VTriangle& vl, const VTriangle& vr)
 {
      set<CvPoint2D32f> set_points;
@@ -104,6 +105,7 @@ bool is_neighbour(const VTriangle& vl, const VTriangle& vr)
           set_points.insert(vl.m_Point[i]);
           set_points.insert(vr.m_Point[i]);
      }
+     cout <<  __FUNCTION__ << "\tset_size: " << set_points.size() << endl;
      return set_points.size() <= 4;
 }
 
@@ -130,12 +132,7 @@ VTriangle::VTriangle(const CvPoint2D32f points[])
      m_Point[2] = points[2];
      m_Color = cvScalar(200,200,200);
      sort(m_Point,m_Point+3,gt);
-     
-     // for(int i=0; i<3; i++)
-     // {
-     //      cout <<  __FUNCTION__ << "\t" << id << "\t" <<  m_Point[i].y  << endl;
-     // }
-          
+
 }
 VTriangle::VTriangle(const CvPoint points[])
 {
