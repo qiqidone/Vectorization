@@ -27,3 +27,6 @@ v 0.2 start project
   + 接着是canny边缘
 * TODO Debug
 ** saveTriangle会出现段错误，points的第一个值会是负数，不知到为什么——可能又是哪里越界了
+* TODO 
+** 先绕过三角形的处理，改而先进行bezier patch以及后继的颜色模型
+   这样，不管从效果的提高，还是以后转型到从点出发渲染图像都是非常有利的

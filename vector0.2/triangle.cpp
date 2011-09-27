@@ -105,7 +105,7 @@ bool is_neighbour(const VTriangle& vl, const VTriangle& vr)
           set_points.insert(vl.m_Point[i]);
           set_points.insert(vr.m_Point[i]);
      }
-     cout <<  __FUNCTION__ << "\tset_size: " << set_points.size() << endl;
+     // cout <<  __FUNCTION__ << "\tset_size: " << set_points.size() << endl;
      return set_points.size() <= 4;
 }
 

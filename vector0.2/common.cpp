@@ -315,6 +315,7 @@ namespace common
                cout << "nChannel != 1 @ delaunay" << endl;
           }
 
+          cout <<  __FUNCTION__ << "\t" << "Delaunay start......" << endl;
           vector< CvPoint2D32f > points;
           for (int i = 0; i < edge->height; ++i)
           {
@@ -368,18 +369,20 @@ namespace common
                cvCalcSubdivVoronoi2D( subdiv );
                cvSet( img, bkgnd_color, 0 );
                draw_subdiv( img, subdiv, delaunay_color, voronoi_color ); 
+#if GO_DEBUG_DELAUNAY
                cvShowImage( win, img );
-
                if( cvWaitKey(10) >= 0 )
                     break;
+#endif               
           }
 
           // cvSet( img, bkgnd_color, 0 );
           // paint_voronoi( subdiv, img );
           // cvShowImage( win, img );
 
-          cvWaitKey(0);
-
+          cvSaveImage("Delaunay.png", img);
+          // cvWaitKey(0);
+          cout <<  __FUNCTION__ << "\t" << "Delaunay finished......" << endl;
           if(source != NULL)
                triangulation(subdiv, source);
           else
