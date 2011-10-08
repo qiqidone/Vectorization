@@ -763,8 +763,220 @@ namespace common
 #endif
      }
 
+     // 将图像导出成obj
+     void export_to_obj(IplImage* img)
+          {
+               if(!img){
+                    cout <<  __FUNCTION__ << "\t" << "img == NULL" << endl;
+                    return;
+               }
+               // gray image for test
+               if(img->nChannels != 1){
+                    cout <<  __FUNCTION__ << "\t" << "nChannel != 1" << endl;
+                    return ;
+               }
+               
+               // export start
+               int step = 5;    // step 让数据小一点
+               double beta = 100.0f; // 让rgb值和xy值不要差太大
+               ofstream fileout("out.obj");
+               for (int i = 0; i < img->height; i+=step)
+               {
+                    for (int j = 0; j < img->width; j+=step)
+                    {
+                         fileout << "v "<< j << "\t" << i << "\t"
+                                 << (double)CV_IMAGE_ELEM(img, uchar, i, j)/beta << endl;
+                    }
+               }
+               for (int i = 0; i < img->height-1; i+=step)
+               {
+                    for (int j = 0; j < img->width-1; j+=step)
+                    {
+                         int id = i*img->width + j;
+                         fileout << "f " << id << "\t" << id + img->width
+                                 << "\t" << id + img->width + 1 << endl;
+                         fileout << "f " << id << "\t" << id + img->width + 1
+                                 << "\t" << id + 1 << endl;                         
+                    }
+               }
 
-     // 测试，增加些测试的东西
+               fileout.close();
+          }
+
+     // 构建BeizerPatch
+     // 映射到uv空间
+     vector< VPoint > get_points(IplImage* img);
+     void bezierpatch(IplImage* img)
+          {
+               vector< VPoint > points = get_points(img);
+               if(points.size() <= 0)
+               {
+                    cout <<  __FUNCTION__ << "\t" << "points.size() <= 0" << endl;
+                    return;
+               }
+              
+               // point 到 inner_point
+               int* hash_table = new int[points.size()];
+               float* flag = new float[points.size()];
+               float lamda = 1.0 / 8.0;
+               // 初始化矩阵
+               vector< VPoint > inner_points;
+               for(int i=0; i<points.size(); ++i)
+               {
+                    // 边界求值 内部点为负
+                    if(i<img->width || i+img->width >= points.size() ||
+                       i%img->width == 0 || (i+1)%img->width == 0)
+                    {
+                         flag[i] = true; // true变成累加旋长
+                    }
+                    else
+                    {
+                         flag[i] = -1.0f;
+                         inner_points.push_back( points[i] );
+                         hash_table[i] = inner_points.size();
+                    }
+               }
+
+               int inner_size = inner_points.size();
+               // 初始化矩阵为0
+               CvMat* A = cvCreateMat(inner_size, inner_size, CV_32FC1);
+               CvMat* BU = cvCreateMat(inner_size, 1, CV_32FC1);
+               CvMat* BV = cvCreateMat(inner_size, 1, CV_32FC1);
+               CvMat* U = cvCreateMat(inner_size, 1, CV_32FC1);
+               CvMat* V = cvCreateMat(inner_size, 1, CV_32FC1);
+               cvSetZero(A);
+               cvSetZero(BU);
+               cvSetZero(BV);
+               // 设置矩阵
+               for(int i=0; i<inner_points.size(); ++i)
+               {
+                    // 边界则B行列式里增加，若非边界则A矩阵参数变化
+                    if(flag[ inner_points[i].id ] < 0)
+                         continue;
+                    
+                    CV_MAT_ELEM(*A, float, i, i) += 1;
+                    for(vector<int>::iterator c = inner_points[i].connect.begin();
+                        c != inner_points[i].connect.end(); ++c)
+                    {
+                         if(flag[*c] < 0) // 非边界
+                         {
+                              CV_MAT_ELEM(*A, float, i, 0) += lamda * flag[*c];
+                         }
+                         else
+                         {
+                              CV_MAT_ELEM(*BU, float, i, hash_table[*c]) += lamda * flag[*c];
+                              CV_MAT_ELEM(*BV, float, i, hash_table[*c]) += lamda * flag[*c];
+                         }
+                    }
+               }
+               // slove 求解得到UV空间的点
+               cvSolve(A, BU, U, CV_SVD);
+               cvSolve(A, BV, V, CV_SVD);
+
+               
+               // release
+               cvReleaseMat(&A);
+               cvReleaseMat(&BU);
+               cvReleaseMat(&BV);
+               delete[] flag;
+               delete[] hash_table;
+          }
+     //得到初始点
+     vector< VPoint > get_points(IplImage* img)
+     {
+               vector< VPoint > points;
+               
+               if(!img){
+                    cout <<  __FUNCTION__ << "\t" << "img == NULL" << endl;
+                    return points;
+               }
+               // gray image for test
+               if(img->nChannels != 1){
+                    cout <<  __FUNCTION__ << "\t" << "nChannel != 1" << endl;
+                    return points;
+               }
+
+               // export start
+               int step = 5;    // step 让数据小一点
+               double beta = 100.0f; // 让rgb值和xy值不要差太大
+               ofstream fileout("out.obj");
+               for (int i = 0; i < img->height; i+=step)
+               {
+                    for (int j = 0; j < img->width; j+=step)
+                    {
+                         points.push_back( VPoint(j, i, (double)CV_IMAGE_ELEM(img, uchar, i, j)/beta,i*img->width+j) );
+                    }
+               }
+               // 建立连接关系
+               for(int i=0; i<points.size(); ++i)
+               {
+                         // 左右
+                         if(i-1 >= 0 && i-1 <points.size())
+                              points[i].connect.push_back(i-1);
+                         if(i+1 >= 0 && i+1 <points.size())
+                              points[i].connect.push_back(i+1);
+                         // 上下
+                         if(i-img->width >= 0 && i-img->width <points.size())
+                              points[i].connect.push_back(i-img->width);
+                         if(i+img->width >= 0 && i+img->width <points.size())
+                              points[i].connect.push_back(i+img->width);
+                         // 上 左右
+                         if(i-img->width+1 >= 0 && i-img->width+1 <points.size())
+                              points[i].connect.push_back(i-img->width+1);
+                         if(i-img->width-1 >= 0 && i-img->width-1 <points.size())
+                              points[i].connect.push_back(i-img->width-1);
+                         // 下 左右
+                         if(i+img->width+1 >= 0 && i+img->width+1 <points.size())
+                              points[i].connect.push_back(i+img->width+1);
+                         if(i+img->width-1 >= 0 && i+img->width-1 <points.size())
+                              points[i].connect.push_back(i+img->width-1);
+               }
+               return points;
+     }
+     // 初始化矩阵系数
+     void initial_matrix(CvMat* A, CvMat* B)
+     {
+               
+     }
+
+     // 解线性方程
+     // 矩阵A:m*n 下标从1开始 D:n未知数个数 P:m方程条数
+     // A*D=P
+     // 先用opencv的解法
+     void solveLinearSystem(int n,int m, float** A, float* P, float* D)
+     {
+           CvMat* MA = cvCreateMat(m, n, CV_32FC1);
+           CvMat* MP = cvCreateMat(m, 1, CV_32FC1);
+           CvMat* MD = cvCreateMat(n, 1, CV_32FC1);
+           // A to MA
+           for(int i=0; i<m; ++i)
+                for(int j=0; j<n; ++j)
+                {
+                     CV_MAT_ELEM(*MA, float, i, j) = A[i+1][j+1];
+                }
+           // P to MP
+           for(int i=0; i<m; ++i)
+                CV_MAT_ELEM(*MP, float, i, 0) = P[i+1];
+           // D to MD : not necessary
+           for(int i=0; i<n;++i)
+                CV_MAT_ELEM(*MD, float, i, 0) = D[i+1];
+
+           // solve
+           cvSolve(MA, MP, MD, CV_SVD);
+
+           // result: D
+           for(int i=0; i<n; ++i)
+           {
+                D[i+1] = CV_MAT_ELEM(*MD, float, i, 0);
+           }
+
+           // release Mat
+           cvReleaseMat(&MA);
+           cvReleaseMat(&MP);
+           cvReleaseMat(&MD);
+     }
+
+// 测试，增加些测试的东西
      void test()
      {
           CvPoint p[3];
@@ -800,5 +1012,7 @@ namespace common
 
           // run
           run();
+ 
      }
+     
 }

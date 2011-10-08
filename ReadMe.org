@@ -1,8 +1,15 @@
 v 0.2 start project 
 
+* Tip
+** Makefile
+  INCPATH += -I/usr/local/include/opencv -I. 
+  LIBS += -L/usr/lib /usr/local/lib/libcv.so /usr/local/lib/libcvaux.so /usr/local/lib/libcxcore.so /usr/local/lib/libhighgui.so 
+** Data Analysis
+   before unique 是 after unique的三倍
+   —— 因为每条边都被做成了新的三角形
 * DONE VTriangle:采样、绘制、重载操作符
   CLOSED: [2011-09-07 三 18:38]
-
+  
 * TODO 合并三角
 ** DONE [#B] is_neighbour
    CLOSED: [2011-09-13 二 11:03]
@@ -30,3 +37,9 @@ v 0.2 start project
 * TODO 
 ** 先绕过三角形的处理，改而先进行bezier patch以及后继的颜色模型
    这样，不管从效果的提高，还是以后转型到从点出发渲染图像都是非常有利的
+*** TODO BEizer 曲面拟合 
+	+ 边界累加求值
+	+ 线性方程组求解
+	  
+	  
+

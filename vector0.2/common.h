@@ -21,7 +21,9 @@ class VTriangle;
 
 namespace common
 {
+     void export_to_obj(IplImage* img);
      void delaunay( IplImage* edge, IplImage* img, IplImage* source );
+     void solveLinearSystem(int n,int m, float** A, float* P, float* D);
      void test();
 }
 

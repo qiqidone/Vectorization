@@ -265,7 +265,9 @@ bool Vectorize::open()
           
      }
      cvShowImage("img", m_data.m_source);
-    
+
+     // open 的同时会导出一份obj
+     common::export_to_obj(m_data.m_gray);
      return true;
 }
 

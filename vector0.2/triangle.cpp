@@ -14,7 +14,7 @@ using namespace std;
 bool operator==(const CvPoint2D32f& vl, const CvPoint2D32f& vr)
 {
      return fabs(vl.x-vr.x) <= ZERO &&
-          fabs(vl.y-vr.y) <=ZERO;
+          fabs(vl.y-vr.y) <= ZERO;
 }
 bool operator!=(const CvPoint2D32f& vl, const CvPoint2D32f& vr)
 {
@@ -215,7 +215,11 @@ void VTriangle::traversal(IplImage* img)
                               color[1] += CV_IMAGE_ELEM(img,uchar,y,i*3+1);
                               color[2] += CV_IMAGE_ELEM(img,uchar,y,i*3+2);
                               total ++;
-                          
+                              // 所有点放入vector m_vpoints中
+                              VPoint r((double)i, (double)y, (double)CV_IMAGE_ELEM(img,uchar,y,i*3+0));
+                              VPoint g((double)i, (double)y, (double)CV_IMAGE_ELEM(img,uchar,y,i*3+1));
+                              VPoint b((double)i, (double)y, (double)CV_IMAGE_ELEM(img,uchar,y,i*3+2));
+                              m_vpoints.push_back(r, g, b);
                          }
                          catch(...){
                               cout <<  __FUNCTION__ << "\t" << "EXCEPT" << endl;
@@ -248,6 +252,12 @@ void VTriangle::traversal(IplImage* img)
                          color[1] += CV_IMAGE_ELEM(img,uchar,y,i*3+1);
                          color[2] += CV_IMAGE_ELEM(img,uchar,y,i*3+2);
                          total ++;
+                         // 所有点放入vector m_vpoints中
+                         VPoint r((double)i, (double)y, (double)CV_IMAGE_ELEM(img,uchar,y,i*3+0));
+                         VPoint g((double)i, (double)y, (double)CV_IMAGE_ELEM(img,uchar,y,i*3+1));
+                         VPoint b((double)i, (double)y, (double)CV_IMAGE_ELEM(img,uchar,y,i*3+2));
+                         m_vpoints.push_back(r, g, b);
+                        
                     }
                     catch(...){
                          cout <<  __FUNCTION__ << "\t" << "EXCEPT" << endl;

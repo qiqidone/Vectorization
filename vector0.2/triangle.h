@@ -6,7 +6,7 @@
 #include <istream>
 #include <highgui.h>
 #include "common.h"
-
+#include "point.h"
 using namespace std;
 
 /* VTriangle 三角形 */
@@ -15,6 +15,7 @@ class VTriangle
 private:
      CvPoint2D32f m_Point[3];
      CvScalar m_Color;
+     VPoints m_vpoints;
      int id;
      int group;
 public:
@@ -24,7 +25,6 @@ public:
      VTriangle(const CvPoint points[]);
      ~VTriangle();
      inline CvPoint2D32f* getPoint(){ return m_Point; }
-
      inline CvScalar getColor(){ return m_Color; }
      inline void setColor(CvScalar color){ m_Color = color; }
      inline void setColor(int color[]){ m_Color = cvScalar(color[0], color[1], color[2]); }
