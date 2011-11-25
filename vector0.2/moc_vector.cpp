@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'vector.h'
 **
-** Created: Fri Oct 7 09:40:38 2011
+** Created: Thu Oct 13 13:12:33 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!
