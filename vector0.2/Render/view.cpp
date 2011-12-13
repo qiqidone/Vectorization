@@ -1,5 +1,7 @@
 #include "view.h"
 #include <QMessageBox>
+#include <QDoubleSpinBox>
+#include <QDialog>
 #include <stdio.h>
 #include <cassert>
 
@@ -122,20 +124,25 @@ void RenderControler::layoutForDesktop()
 
      createCommonControls(mainGroup);
 
+     // Render Function
+     QComboBox* rayFunctionCombo = new QComboBox(mainGroup);
+     rayFunctionCombo->insertItem(0, tr("Ray Render"));
+     rayFunctionCombo->insertItem(1, tr("Field Render"));
+     rayFunctionCombo->insertItem(2, tr("Diffusion Render"));
      // pen width
      QGroupBox* penWidthGroup = new QGroupBox(mainGroup);
      QSlider *penWidth = new QSlider(Qt::Horizontal, penWidthGroup);
      penWidth->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-     penWidthGroup->setTitle(tr("Pen Width"));
+     penWidthGroup->setTitle(tr("Ray Num"));
      penWidth->setRange(0, 100);
      // engine
      QPushButton *engineButton = new QPushButton(mainGroup);
      engineButton->setText(tr("Engine"));
-     engineButton->setCheckable(true);
+     // engineButton->setCheckable(true);
      // show image
      QPushButton *showButton = new QPushButton(mainGroup);
      showButton->setText(tr("Show Image"));
-     showButton->setCheckable(true);
+     // showButton->setCheckable(true);
      // show txt
      QPushButton *textButton = new QPushButton(mainGroup);
      textButton->setText(tr("Show Data"));
@@ -156,8 +163,9 @@ void RenderControler::layoutForDesktop()
      mainGroupLayout->addWidget(m_pointGroup);   
      mainGroupLayout->addWidget(m_joinGroup);    
      mainGroupLayout->addWidget(m_styleGroup);   
+     mainGroupLayout->addWidget(rayFunctionCombo);
      mainGroupLayout->addWidget(penWidthGroup);  
-     
+
      mainGroupLayout->addStretch();
      mainGroupLayout->addWidget(engineButton);
      mainGroupLayout->addWidget(showButton);
@@ -166,6 +174,8 @@ void RenderControler::layoutForDesktop()
      mainGroupLayout->addWidget(whatsThisButton);
 
      //Connection
+     connect(rayFunctionCombo, SIGNAL(currentIndexChanged(int)),
+             m_viewer, SLOT(setRayFunction(int)));
      connect(penWidth, SIGNAL(valueChanged(int)),
              m_viewer, SLOT(setPenWidth(int)));
      connect(engineButton, SIGNAL(clicked()),
@@ -489,7 +499,14 @@ void RenderViewer::chooseColor()
 
 void RenderViewer::chooseSigma()
 {
-     qreal sigma = 20.;
+     CancellationDialog cd;
+     QDoubleSpinBox *sb = cd.m_pthreshold;
+     sb->setRange(0.0, 10.0);
+     sb->setValue(0.0);
+     sb->setSingleStep(0.01);
+     cd.exec();
+     qreal sigma = sb->value();
+     fprintf(stderr, "get sigma %.2f\n", sigma);
      if(m_state == SET_LEFT_SIGMA){
           m_leftSigma[m_activeLine] = sigma;
 //          printf("%d\n", m_activeLine);
@@ -555,6 +572,8 @@ void RenderViewer::engineStart()
      // output file
      FILE *f = fopen("data.txt", "w");
      fprintf(f, "# test\n");
+
+     fprintf(f, "c %d %d\n", m_rayNum, m_rayFuntion);
      for(int i=0; i<m_points.size(); ++i)
      {
           fprintf(f, "v %d %.2f %.2f\n",
@@ -580,7 +599,7 @@ void RenderViewer::engineStart()
      for(it=m_vectorMapping.begin(); it != m_vectorMapping.end(); ++it)
      {
           // 
-          fprintf(f, "l %d %d %d %d %d %d %d %d %d %d %d %.2f\n",
+          fprintf(f, "l %d %d %d %d %d %d %d %d %d %d %d %.2f %.2f\n",
                   m++,
                   it.value()+1,
                   it.key()+n,
@@ -592,6 +611,7 @@ void RenderViewer::engineStart()
                   m_rightColor[it.key()].green(),
                   m_rightColor[it.key()].blue(),
                   m_rightColor[it.key()].alpha(),
+                  m_leftSigma[it.key()],
                   m_rightSigma[it.key()]);
               
      }
@@ -599,8 +619,9 @@ void RenderViewer::engineStart()
      fprintf(f, "# end\n");
      fclose(f);
 
+     fprintf(stderr, "Render start.\n");
      m_render.run();
-     fprintf(stderr, "Render end.\n");
+     fprintf(stderr, "\rRender end.\n");
 
      // show
      m_image->load("image.ppm");
@@ -624,7 +645,6 @@ void RenderViewer::showData()
 }     
 
 /*******         RenderWidget        *********/
-
 RenderWidget::RenderWidget(QWidget* parent)
      : QWidget(parent)
 {
@@ -646,3 +666,42 @@ RenderWidget::RenderWidget(QWidget* parent)
      connect(m_controler, SIGNAL(quitPressed()),
              QApplication::instance(), SLOT(quit()));
 }
+
+
+/********** SpinBox Dialog **********/
+CancellationDialog::CancellationDialog(QWidget *parent)
+:QDialog(parent)
+{
+	label = new QLabel(tr("Threshold:"));
+	m_pthreshold = new QDoubleSpinBox;
+	m_pthreshold->setDecimals(3);
+
+	QSpacerItem *spacerItem = new QSpacerItem(131, 31, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+
+	okButton = new QPushButton(tr("OK"));
+	cancelButton = new QPushButton(tr("Close"));
+
+	connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
+	connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+
+	QHBoxLayout *layout = new QHBoxLayout;
+	layout->addWidget(label);
+	layout->addWidget(m_pthreshold);
+
+
+	QHBoxLayout *hlayout = new QHBoxLayout;
+	hlayout->addItem(spacerItem);
+	hlayout->addWidget(okButton);
+	hlayout->addWidget(cancelButton);
+
+	QVBoxLayout *vlayout = new QVBoxLayout;
+	vlayout->addLayout(layout);
+	vlayout->addLayout(hlayout);
+
+	setLayout(vlayout);
+
+	setWindowTitle(tr("Select a eigenvector"));
+	setFixedHeight(sizeHint().height());
+}            
+

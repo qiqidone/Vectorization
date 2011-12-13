@@ -214,7 +214,7 @@ moc_view.o: moc_view.cpp
 .PHONY: cuda
 cuda: libRender.so
 libRender.so: render.cu radial.h
-	nvcc -arch=compute_11 -code=sm_11 -g -o libRender.so --shared render.cu
+	nvcc -arch=compute_20 -code=sm_20 -g -o libRender.so --shared render.cu
 
 ####### Install
 

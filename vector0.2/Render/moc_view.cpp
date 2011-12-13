@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'view.h'
 **
-** Created: Thu Nov 24 21:16:33 2011
+** Created: Tue Dec 13 11:03:32 2011
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_RenderViewer[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-      18,   14, // methods
+      19,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -31,37 +31,38 @@ static const uint qt_meta_data_RenderViewer[] = {
        0,       // signalCount
 
  // slots: signature, parameters, type, tag, flags
-      23,   14,   13,   13, 0x0a,
-      40,   13,   13,   13, 0x0a,
-      54,   13,   13,   13, 0x0a,
-      67,   13,   13,   13, 0x0a,
-      82,   13,   13,   13, 0x0a,
-      96,   13,   13,   13, 0x0a,
-     113,   13,   13,   13, 0x0a,
-     129,   13,   13,   13, 0x0a,
-     139,   13,   13,   13, 0x0a,
-     151,   13,   13,   13, 0x0a,
-     160,   13,   13,   13, 0x0a,
-     169,   13,   13,   13, 0x0a,
-     188,   13,   13,   13, 0x0a,
-     208,   13,   13,   13, 0x0a,
-     227,   13,   13,   13, 0x0a,
-     247,   13,   13,   13, 0x0a,
-     261,   13,   13,   13, 0x0a,
-     273,   13,   13,   13, 0x0a,
+      19,   14,   13,   13, 0x0a,
+      48,   39,   13,   13, 0x0a,
+      65,   13,   13,   13, 0x0a,
+      79,   13,   13,   13, 0x0a,
+      92,   13,   13,   13, 0x0a,
+     107,   13,   13,   13, 0x0a,
+     121,   13,   13,   13, 0x0a,
+     138,   13,   13,   13, 0x0a,
+     154,   13,   13,   13, 0x0a,
+     164,   13,   13,   13, 0x0a,
+     176,   13,   13,   13, 0x0a,
+     185,   13,   13,   13, 0x0a,
+     194,   13,   13,   13, 0x0a,
+     213,   13,   13,   13, 0x0a,
+     233,   13,   13,   13, 0x0a,
+     252,   13,   13,   13, 0x0a,
+     272,   13,   13,   13, 0x0a,
+     286,   13,   13,   13, 0x0a,
+     298,   13,   13,   13, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_RenderViewer[] = {
-    "RenderViewer\0\0penWidth\0setPenWidth(int)\0"
-    "setAddPoint()\0setAddLine()\0setMovePoint()\0"
-    "setMoveLine()\0setDeletePoint()\0"
-    "setDeleteLine()\0setLock()\0setUnlock()\0"
-    "setCPU()\0setGPU()\0setLineColorLeft()\0"
-    "setLineColorRight()\0setLineSigmaLeft()\0"
-    "setLineSigmaRight()\0engineStart()\0"
-    "showImage()\0showData()\0"
+    "RenderViewer\0\0func\0setRayFunction(int)\0"
+    "penWidth\0setPenWidth(int)\0setAddPoint()\0"
+    "setAddLine()\0setMovePoint()\0setMoveLine()\0"
+    "setDeletePoint()\0setDeleteLine()\0"
+    "setLock()\0setUnlock()\0setCPU()\0setGPU()\0"
+    "setLineColorLeft()\0setLineColorRight()\0"
+    "setLineSigmaLeft()\0setLineSigmaRight()\0"
+    "engineStart()\0showImage()\0showData()\0"
 };
 
 const QMetaObject RenderViewer::staticMetaObject = {
@@ -93,27 +94,28 @@ int RenderViewer::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: setPenWidth((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 1: setAddPoint(); break;
-        case 2: setAddLine(); break;
-        case 3: setMovePoint(); break;
-        case 4: setMoveLine(); break;
-        case 5: setDeletePoint(); break;
-        case 6: setDeleteLine(); break;
-        case 7: setLock(); break;
-        case 8: setUnlock(); break;
-        case 9: setCPU(); break;
-        case 10: setGPU(); break;
-        case 11: setLineColorLeft(); break;
-        case 12: setLineColorRight(); break;
-        case 13: setLineSigmaLeft(); break;
-        case 14: setLineSigmaRight(); break;
-        case 15: engineStart(); break;
-        case 16: showImage(); break;
-        case 17: showData(); break;
+        case 0: setRayFunction((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 1: setPenWidth((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 2: setAddPoint(); break;
+        case 3: setAddLine(); break;
+        case 4: setMovePoint(); break;
+        case 5: setMoveLine(); break;
+        case 6: setDeletePoint(); break;
+        case 7: setDeleteLine(); break;
+        case 8: setLock(); break;
+        case 9: setUnlock(); break;
+        case 10: setCPU(); break;
+        case 11: setGPU(); break;
+        case 12: setLineColorLeft(); break;
+        case 13: setLineColorRight(); break;
+        case 14: setLineSigmaLeft(); break;
+        case 15: setLineSigmaRight(); break;
+        case 16: engineStart(); break;
+        case 17: showImage(); break;
+        case 18: showData(); break;
         default: ;
         }
-        _id -= 18;
+        _id -= 19;
     }
     return _id;
 }

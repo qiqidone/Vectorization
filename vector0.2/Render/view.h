@@ -26,6 +26,12 @@ enum RenderTypes
      GPU,
 };
 
+enum RenderFunction
+{
+     Ray_Render,
+     Field_Render,
+     Diffusion_Render
+};
 
 static const char* STATE_NAME[] = {
      "DO_NOTHING",
@@ -47,12 +53,11 @@ static const char* RENDER_TYPE[] = {
      "GPU"     
 };
 
-struct QRadialLine
-{
-     QPointF *point;
-     QLine *line;
-     QColor *left_color;
-     QColor *right_color;
+static const char* RENDER_FUNCTION[] = {
+     "Ray_Render",
+     "Field_Render",
+     "Diffusion_Render",
+     "Other_Render"
 };
 
 
@@ -70,7 +75,7 @@ public:
      //void timeEvent(QTimerEvent* e){}
 
      QSize sizeHint() const { return QSize(512, 512); }
-     void setRealPenWidth(qreal penWidth) { m_penWidth = penWidth; update(); }
+     void setRealPenWidth(qreal penWidth) { m_penWidth = penWidth; m_rayNum = 180*m_penWidth; update(); }
      void chooseColor();
      void chooseSigma();
      void deletePoint(int point);
@@ -80,7 +85,8 @@ protected:
      void paintEvent(QPaintEvent* p);
         
 public slots:
-     void setPenWidth(int penWidth) { m_penWidth = penWidth / 10.0; update(); }
+     void setRayFunction(int func) { m_rayFunction = func; printf("Ray Function = %s\n", RENDER_FUNCTION[m_rayFunction]); update(); }
+     void setPenWidth(int penWidth) { m_penWidth = penWidth / 10.0; m_rayNum = 180*m_penWidth; printf("Ray NUm = %d\n", m_rayNum); update(); }
      void setAddPoint() { m_state = ADD_POINT; update(); }
      void setAddLine(){ m_state = ADD_LINE; update(); }
      void setMovePoint(){ m_state = MOVE_POINT; update(); }
@@ -104,13 +110,14 @@ private:
      void updatePoints();
 
      qreal m_penWidth;
+     int m_rayNum;
+     int m_rayFunction;
      int m_pointCount;
      int m_pointSize;
      int m_activePoint;
      int m_activeLine;
      QVector<QPointF> m_points; /* start point */
      QVector<QPointF> m_vectors; /* end point */
-     QVector<QRadialLine> m_lines;
      QVector<QColor> m_leftColor;
      QVector<QColor> m_rightColor;
      QVector<qreal> m_leftSigma;
@@ -167,5 +174,22 @@ private:
 /*      void showControls(); */
 /*      void hideControls(); */
 };
+
+class QLabel;
+class QPushButton;
+class QDoubleSpinBox;
+class QSpacerIterm;
+class CancellationDialog:public QDialog
+{
+public:
+	CancellationDialog(QWidget *parent = NULL);
+	QDoubleSpinBox *m_pthreshold;
+
+private:
+	QPushButton *okButton;
+	QPushButton *cancelButton;
+	QLabel *label;
+};
+
 
 #endif /* _VIEW_H_ */
